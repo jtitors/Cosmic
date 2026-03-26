@@ -35,6 +35,7 @@ public class Item implements Comparable<Item> {
     private static final AtomicInteger runningCashId = new AtomicInteger(777000000);  // pets & rings shares cashid values
 
     private final int id;
+    private int appearanceId;
     private int cashId;
     private int sn;
     private short position;
@@ -53,6 +54,7 @@ public class Item implements Comparable<Item> {
         this.quantity = quantity;
         this.itemLog = new LinkedList<>();
         this.flag = 0;
+        this.appearanceId = -1;
     }
 
     public Item(int id, short position, short quantity, int petid) {
@@ -68,6 +70,7 @@ public class Item implements Comparable<Item> {
         this.petid = petid;
         this.flag = 0;
         this.itemLog = new LinkedList<>();
+        this.appearanceId = -1;
     }
 
     public Item copy() {
@@ -84,6 +87,15 @@ public class Item implements Comparable<Item> {
         if (this.pet != null) {
             this.pet.setPosition(position);
         }
+    }
+
+    public void setAppearance(int appearanceId) {
+        this.appearanceId =  appearanceId;
+    }
+
+    public int getItemAppearance() {
+        if (this.appearanceId != -1) { return this.appearanceId; }
+        return this.getItemId();
     }
 
     public void setQuantity(short quantity) {
