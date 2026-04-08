@@ -42,7 +42,7 @@ import tools.Pair;
 import java.util.Iterator;
 import java.util.*;
 
-public class MonsterInfoCommand extends Command {
+public class MobInfoCommand extends Command {
     {
         setDescription("");
     }
@@ -51,7 +51,7 @@ public class MonsterInfoCommand extends Command {
     private final static MonsterInformationProvider monsterInfoProvider = MonsterInformationProvider.getInstance();
     private final static Map<String, Map<String, Integer>> mobSpawnData = new HashMap<String, Map<String, Integer>>();
     private final static int MAX_RESULT_SIZE = 10;
-    private final static MonsterInfoCommand instance = new MonsterInfoCommand();
+    private final static MobInfoCommand instance = new MobInfoCommand();
 
     @Override
     public void execute(Client c, String[] params) {
@@ -143,7 +143,7 @@ public Map<String, String> getMobStats(String mobId) {
         while (mobId.length() < 7){
             mobId = "0" + mobId;
         }
-        Data mobData = MonsterInfoCommand.mobData.getData(mobId+".img");
+        Data mobData = MobInfoCommand.mobData.getData(mobId+".img");
         Map<String, String> mobStats = new HashMap<String, String>();
         String mobImgId = mobData.getChildByPath("info/link") != null ? DataTool.getString(mobData.getChildByPath("info/link")) : mobId;
         mobStats.put("id", mobId);
