@@ -206,7 +206,7 @@ server:
 
     #Server Flags
     USE_CUSTOM_KEYSET: false             #Enables auto-setup of the HeavenMS's custom keybindings when creating characters.
-    USE_DEBUG: false                    #Will enable some text prints on the client, oriented for debugging purposes.
+    USE_DEBUG: true                    #Will enable some text prints on the client, oriented for debugging purposes.
     USE_DEBUG_SHOW_INFO_EQPEXP: false   #Prints on the cmd all equip exp gain info.
     USE_DEBUG_SHOW_RCVD_PACKET: false   #Prints on the cmd all received packet ids.
     USE_DEBUG_SHOW_RCVD_MVLIFE: false   #Prints on the cmd all received move life content.
@@ -304,7 +304,7 @@ server:
     MAX_MONITORED_BUFFSTATS: 5                 #Limits accounting for "dormant" buff effects, that should take place when stronger stat buffs expires.
     MAX_AP: 32767                               #Max AP allotted on the auto-assigner.
     MAX_EVENT_LEVELS: 8                         #Event has different levels of rewarding system.
-    BLOCK_NPC_RACE_CONDT: 500   # (0.5 * 1000) Time the player client must wait before reopening a conversation with an NPC.
+    BLOCK_NPC_RACE_CONDT: 10   # (0.5 * 1000) Time the player client must wait before reopening a conversation with an NPC.
     TOT_MOB_QUEST_REQUIREMENT: 0               #Overwrites old 999-mobs requirement for the ToT questline with new requirement value, set 0 for default.
     MOB_REACTOR_REFRESH_TIME: 0         # (30 * 1000) Overwrites refresh time for those reactors oriented to inflict damage to bosses (Ice Queen, Riche), set 0 for default.
     PARTY_SEARCH_REENTRY_LIMIT: 10              #Max amount of times a party leader is allowed to persist on the Party Search before entry expiration (thus needing to manually restart the Party Search to be able to search for members).
@@ -451,5 +451,5 @@ server:
 
     #Any NPC ids that should search for a js override script (useful if they already have wz entries since otherwise they're ignored).
     NPCS_SCRIPTABLE:
-      #9200000: Talk to Cody # Cody
+      9200000: Talk to Cody # Cody
       9001105: Rescue Gaga!  # Grandpa moon bunny

@@ -37,10 +37,14 @@ import provider.DataProviderFactory;
 import provider.DataTool;
 import provider.wz.WZFiles;
 import server.life.MonsterInformationProvider;
+import constants.game.GameConstants;
 import tools.Pair;
 
 import java.util.Iterator;
 import java.util.*;
+
+import static constants.game.GameConstants.ELEMENTS;
+import static constants.game.GameConstants.ELEMENT_EFFECTIVENESS;
 
 public class MobInfoCommand extends Command {
     {
@@ -139,7 +143,7 @@ public class MobInfoCommand extends Command {
     }
     }
 
-public Map<String, String> getMobStats(String mobId) {
+public Map<String, String> getMobStats(String mobId, List<String> attrributes) {
         while (mobId.length() < 7){
             mobId = "0" + mobId;
         }
@@ -147,11 +151,57 @@ public Map<String, String> getMobStats(String mobId) {
         Map<String, String> mobStats = new HashMap<String, String>();
         String mobImgId = mobData.getChildByPath("info/link") != null ? DataTool.getString(mobData.getChildByPath("info/link")) : mobId;
         mobStats.put("id", mobId);
-        mobStats.put("HP", ""+DataTool.getInt(mobData.getChildByPath("info/maxHP")));
-        mobStats.put("EXP", ""+DataTool.getInt(mobData.getChildByPath("info/exp")));
         mobStats.put("img", "Mob/"+mobImgId+".img/stand/0");
-        return mobStats;
+        for (String attr : attrributes){
+            try {
+                String value = DataTool.getString(mobData.getChildByPath("info/" + attr));
 
+                if (attr.toLowerCase().equals("elemattr")) {
+                    Map<String, String> parsedElements = parseElementalAttributes(value);
+                    for (String effectivenessLevel : parsedElements.keySet()){
+                        mobStats.put(effectivenessLevel+" to", parsedElements.get(effectivenessLevel));
+                    }
+                    continue;
+                }
+
+                mobStats.put(attr.replaceAll("max", "").toUpperCase(), value);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return mobStats;
+}
+
+private Map<String, String> parseElementalAttributes(String value) {
+        if (value.length()  %2 != 0) { throw new IllegalArgumentException("Invalid elemAttr value: "+value); } // elemAttr should always be of even length
+         Map<String, List<String>> groupedElements = new HashMap<>();
+
+        groupedElements.put("Immune", new ArrayList<>());
+        groupedElements.put("Resistant", new ArrayList<>());
+        groupedElements.put("Weak", new ArrayList<>());
+
+        for (int i =0 ; i < value.length(); i += 2 ){
+
+            String elementKey = value.substring(i, i + 1);
+            int level = java.lang.Character.getNumericValue(elementKey.charAt(i+1));
+
+            String element = ELEMENTS.get(elementKey);
+            String effectiveness = ELEMENT_EFFECTIVENESS.get(level);
+
+            if (effectiveness != null) {
+                groupedElements.get(effectiveness).add(element);
+            }
+
+        }
+
+        // Convert to a ready-to-print list
+        Map<String, String> result = new HashMap<>();
+        for (Map.Entry<String, List<String>> entry : groupedElements.entrySet()) {
+            if (!entry.getValue().isEmpty()){
+                result.put(entry.getKey(), String.join("\r\n", entry.getValue()));
+            }
+        }
+        return result;
 }
 
 }

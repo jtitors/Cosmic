@@ -38,6 +38,8 @@ public class GameConstants {
     public static final Disease[] CPQ_DISEASES = {Disease.SLOW, Disease.SEDUCE, Disease.STUN, Disease.POISON,
             Disease.SEAL, Disease.DARKNESS, Disease.WEAKEN, Disease.CURSE};
 
+    public static final Map<String, String> elementalAttributes;
+
     public static final int MAX_FIELD_MOB_DAMAGE = getMaxObstacleMobDamageFromWz() * 2;
 
     public static int getPlayerBonusDropRate(int slot) {
@@ -115,6 +117,23 @@ public class GameConstants {
         put("fm", MapId.FM_ENTRANCE);
     }};
 
+    public static final Map<String, String> ELEMENTS = new HashMap<>(){{
+        put("P", "Physical");
+        put("H", "Holy");
+        put("F", "Fire");
+        put("I", "Ice");
+        put("D", "Dark");
+        put("L", "Lightning");
+        put("S", "Poison");
+    }};
+
+    public static final Map<Integer, String> ELEMENT_EFFECTIVENESS = new HashMap<>() {{
+        put(1, "Immune");
+        put(2, "Resistant");
+        put(3, "Weak");
+    }}
+
+    public static final Map<Integer, String>
     public static final List<String> GAME_SONGS = new ArrayList<>(170) {{
         add("Jukebox/Congratulation");
         add("Bgm00/SleepyWood");
