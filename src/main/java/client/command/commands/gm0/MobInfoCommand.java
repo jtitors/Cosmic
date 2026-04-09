@@ -40,6 +40,7 @@ import server.life.MonsterInformationProvider;
 import constants.game.GameConstants;
 import tools.Pair;
 
+import java.sql.Array;
 import java.util.Iterator;
 import java.util.*;
 
@@ -57,6 +58,8 @@ public class MobInfoCommand extends Command {
     private final static int MAX_RESULT_SIZE = 10;
     private final static MobInfoCommand instance = new MobInfoCommand();
 
+    private final static List<String> mobAttributes = Arrays.asList("level", "maxHP", "exp", "elemAttr");
+
     @Override
     public void execute(Client c, String[] params) {
         if (mobSpawnData.isEmpty()){
@@ -65,7 +68,7 @@ public class MobInfoCommand extends Command {
         }
         Character player = c.getPlayer();
         if (params.length < 1) {
-            player.dropMessage(5, "The correct usage is '@monsterinfo <monster name>'");
+            player.dropMessage(5, "The correct usage is '@mobinfo <monster name>'");
             return;
         }
         String monsterName = player.getLastCommandMessage();
@@ -80,7 +83,7 @@ public class MobInfoCommand extends Command {
             while(listIterator.hasNext()) {
                 Pair<Integer, String> data = listIterator.next();
                 int mobId = data.getLeft();
-                Map<String, String> mobStats = getMobStats(""+mobId);
+                Map<String, String> mobStats = getMobStats(""+mobId, mobAttributes);
                 output +="#F"+mobStats.get("img")+"#\r\n"+"#d#o"+mobStats.get("id")+"#";
                 output += monsterInfoProvider.isBoss(mobId)? " (Boss)\r\n" : "\r\n";
 
@@ -143,7 +146,7 @@ public class MobInfoCommand extends Command {
     }
     }
 
-public Map<String, String> getMobStats(String mobId, List<String> attrributes) {
+public Map<String, String> getMobStats(String mobId, List<String> attributes) {
         while (mobId.length() < 7){
             mobId = "0" + mobId;
         }
@@ -152,7 +155,7 @@ public Map<String, String> getMobStats(String mobId, List<String> attrributes) {
         String mobImgId = mobData.getChildByPath("info/link") != null ? DataTool.getString(mobData.getChildByPath("info/link")) : mobId;
         mobStats.put("id", mobId);
         mobStats.put("img", "Mob/"+mobImgId+".img/stand/0");
-        for (String attr : attrributes){
+        for (String attr : attributes){
             try {
                 String value = DataTool.getString(mobData.getChildByPath("info/" + attr));
 
