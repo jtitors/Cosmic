@@ -37,7 +37,6 @@ import provider.DataProviderFactory;
 import provider.DataTool;
 import provider.wz.WZFiles;
 import server.life.MonsterInformationProvider;
-import constants.game.GameConstants;
 import tools.Pair;
 
 import java.sql.Array;
@@ -55,6 +54,7 @@ public class MobInfoCommand extends Command {
     private final static DataProvider mobData = DataProviderFactory.getDataProvider(WZFiles.MOB);
     private final static MonsterInformationProvider monsterInfoProvider = MonsterInformationProvider.getInstance();
     private final static Map<String, Map<String, Integer>> mobSpawnData = new HashMap<String, Map<String, Integer>>();
+    private final static Map<String, Map<String, String>> mobCachedInfo = new HashMap<String, Map<String, String>>();
     private final static int MAX_RESULT_SIZE = 10;
     private final static MobInfoCommand instance = new MobInfoCommand();
 
@@ -64,7 +64,7 @@ public class MobInfoCommand extends Command {
     public void execute(Client c, String[] params) {
         if (mobSpawnData.isEmpty()){
             // if the spawn map wasn't cached on server start, it will be cached on the first command execution
-            buildMobSpawnMap();
+            cacheMobInfo();
         }
         Character player = c.getPlayer();
         if (params.length < 1) {
@@ -83,16 +83,32 @@ public class MobInfoCommand extends Command {
             while(listIterator.hasNext()) {
                 Pair<Integer, String> data = listIterator.next();
                 int mobId = data.getLeft();
-                Map<String, String> mobStats = getMobStats(""+mobId, mobAttributes);
+                Map<String, String> mobStats;
+                String idKey = "" + mobId;
+                if (idKey.length() < 7) {
+                    String pad = idKey;
+                    while (pad.length() < 7) {
+                        pad = "0" + pad;
+                    }
+                    idKey = pad;
+                }
+                if (mobCachedInfo.containsKey(idKey)) {
+                    mobStats = mobCachedInfo.get(idKey);
+                } else {
+                    mobStats = getMobStats(idKey, mobAttributes);
+                    if (mobStats != null && mobStats.get("id") != null) {
+                        mobCachedInfo.put(mobStats.get("id"), mobStats);
+                    }
+                }
                 output +="#F"+mobStats.get("img")+"#\r\n"+"#d#o"+mobStats.get("id")+"#";
                 output += monsterInfoProvider.isBoss(mobId)? " (Boss)\r\n" : "\r\n";
 
                 // Ugly implementation, but allows for adjustment of getMobStats()
 
                 for (String key : mobStats.keySet()) {
-                    int stat = Integer.valueOf(mobStats.get(key));
+                    String stat = mobStats.get(key);
                     if ( key.equals("img") || key.equals("id")) { continue; }
-                    if (key.equals("EXP")) { stat*=player.getExpRate(); }
+                    if (key.equals("EXP")) { stat = ""  + (Integer.valueOf(stat)*player.getExpRate()); }
                     output+="#r" + key+ ": "+stat +"\r\n";
                 }
                 output += "\r\n";
@@ -111,7 +127,7 @@ public class MobInfoCommand extends Command {
             c.getAbstractPlayerInteraction().npcTalk(9010000, output);
     }
 
-    public static void buildMobSpawnMap() {
+    public static void cacheMobInfo() {
         DataProvider mapWz = DataProviderFactory.getDataProvider(WZFiles.MAP);
 
         for (DataDirectoryEntry dir : mapWz.getRoot().getSubdirectories()){
@@ -124,6 +140,25 @@ public class MobInfoCommand extends Command {
                             String mapId = file.getName().replaceAll(".img", "");
                             for (Data life : mapData.getChildByPath("../life").getChildren()){
                                 String mobId = DataTool.getString(life.getChildByPath("id"));
+                                if (mobId.length() < 7) {
+                                    String pad = mobId;
+                                    while (pad.length() < 7) {
+                                        pad = "0" + pad;
+                                    }
+                                    mobId = pad;
+                                }
+                                // cache full mob info for this mob id (used later by the command)
+                                try {
+                                    if (!mobCachedInfo.containsKey(mobId)) {
+                                        Map<String, String> stats = instance.getMobStats(mobId, mobAttributes);
+                                        if (stats != null) {
+                                            String pid = stats.get("id");
+                                            mobCachedInfo.put(pid, stats);
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    // ignore caching errors
+                                }
                                 if(mobSpawnData.containsKey(mobId)){
                                     if(!mobSpawnData.get(mobId).containsKey(mapId)){
                                         mobSpawnData.get(mobId).put(mapId, 1);
@@ -146,10 +181,7 @@ public class MobInfoCommand extends Command {
     }
     }
 
-public Map<String, String> getMobStats(String mobId, List<String> attributes) {
-        while (mobId.length() < 7){
-            mobId = "0" + mobId;
-        }
+    public Map<String, String> getMobStats(String mobId, List<String> attributes) {
         Data mobData = MobInfoCommand.mobData.getData(mobId+".img");
         Map<String, String> mobStats = new HashMap<String, String>();
         String mobImgId = mobData.getChildByPath("info/link") != null ? DataTool.getString(mobData.getChildByPath("info/link")) : mobId;
@@ -157,17 +189,18 @@ public Map<String, String> getMobStats(String mobId, List<String> attributes) {
         mobStats.put("img", "Mob/"+mobImgId+".img/stand/0");
         for (String attr : attributes){
             try {
-                String value = DataTool.getString(mobData.getChildByPath("info/" + attr));
-
                 if (attr.toLowerCase().equals("elemattr")) {
+                    String value = DataTool.getString(mobData.getChildByPath("info/" + attr));
+
                     Map<String, String> parsedElements = parseElementalAttributes(value);
                     for (String effectivenessLevel : parsedElements.keySet()){
                         mobStats.put(effectivenessLevel+" to", parsedElements.get(effectivenessLevel));
                     }
                     continue;
                 }
+                int value = DataTool.getInt(mobData.getChildByPath("info/" + attr));
 
-                mobStats.put(attr.replaceAll("max", "").toUpperCase(), value);
+                mobStats.put(attr.replaceAll("max", "").toUpperCase(), ""+value);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -186,7 +219,7 @@ private Map<String, String> parseElementalAttributes(String value) {
         for (int i =0 ; i < value.length(); i += 2 ){
 
             String elementKey = value.substring(i, i + 1);
-            int level = java.lang.Character.getNumericValue(elementKey.charAt(i+1));
+            int level = java.lang.Character.getNumericValue(value.charAt(i+1));
 
             String element = ELEMENTS.get(elementKey);
             String effectiveness = ELEMENT_EFFECTIVENESS.get(level);
@@ -201,7 +234,7 @@ private Map<String, String> parseElementalAttributes(String value) {
         Map<String, String> result = new HashMap<>();
         for (Map.Entry<String, List<String>> entry : groupedElements.entrySet()) {
             if (!entry.getValue().isEmpty()){
-                result.put(entry.getKey(), String.join("\r\n", entry.getValue()));
+                result.put(entry.getKey(), String.join(", ", entry.getValue()));
             }
         }
         return result;
