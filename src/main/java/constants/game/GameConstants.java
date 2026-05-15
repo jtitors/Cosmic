@@ -133,7 +133,6 @@ public class GameConstants {
         put(3, "Weak");
     }};
 
-    public static final Map<Integer, String>
     public static final List<String> GAME_SONGS = new ArrayList<>(170) {{
         add("Jukebox/Congratulation");
         add("Bgm00/SleepyWood");
