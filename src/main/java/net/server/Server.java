@@ -944,7 +944,7 @@ public class Server {
 
         OpcodeConstants.generateOpcodeNames();
         CommandsExecutor.getInstance();
-        MobInfoCommand.buildMobSpawnMap();
+        MobInfoCommand.cacheMobInfo();
 
         for (Channel ch : this.getAllChannels()) {
             ch.reloadEventScriptManager();
