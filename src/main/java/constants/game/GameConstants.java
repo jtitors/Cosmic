@@ -131,7 +131,7 @@ public class GameConstants {
         put(1, "Immune");
         put(2, "Resistant");
         put(3, "Weak");
-    }}
+    }};
 
     public static final Map<Integer, String>
     public static final List<String> GAME_SONGS = new ArrayList<>(170) {{
