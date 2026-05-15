@@ -944,7 +944,9 @@ public class Server {
 
         OpcodeConstants.generateOpcodeNames();
         CommandsExecutor.getInstance();
-        MobInfoCommand.cacheMobInfo();
+        // Start mob cache in background to avoid blocking startup.
+        // First command to use @mobinfo will wait up to 5 seconds for cache completion.
+        MobInfoCommand.startCacheAsync();
 
         for (Channel ch : this.getAllChannels()) {
             ch.reloadEventScriptManager();
