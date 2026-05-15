@@ -1,14 +1,9 @@
-item = 1102041;
 function start() {
-    if (cm.canHold(1102041)) {
-        cm.sendNext("enjoy your #1102041");
-        cm.gainItem(1102041, 1);
-    } else {
-        cm.sendOk("Your inventory is full");
-    }
-    cm.dispose();
+    status = -1;
+    action(1, 0, 0);
 }
 
 function action(mode, type, selection) {
+    cm.sendNext("Hi, I'm #p9010003#.");
     cm.dispose();
 }

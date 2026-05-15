@@ -551,7 +551,7 @@ public final class UseCashItemHandler extends AbstractPacketHandler {
             c.sendPacket(PacketCreator.enableActions());
         } else if (itemType == 552) { //DS EGG THING
             c.sendPacket(PacketCreator.enableActions());
-        } else if (itemType == 557) { // VICIOUS HAMMER
+        } else if (itemType == 557) {
             p.readInt();
             int itemSlot = p.readInt();
             p.readInt();
