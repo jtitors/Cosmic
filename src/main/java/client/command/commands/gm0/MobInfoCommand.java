@@ -25,7 +25,10 @@
 */
 
 package client.command.commands.gm0;
-
+// Remove later, added for logging purposes
+import java.time.Instant; 
+import java.time.Duration;
+//
 import client.Character;
 import client.Client;
 import client.command.Command;
@@ -128,6 +131,7 @@ public class MobInfoCommand extends Command {
     }
 
     public static void cacheMobInfo() {
+        Instant beforeInit = Instant.now();
         DataProvider mapWz = DataProviderFactory.getDataProvider(WZFiles.MAP);
 
         for (DataDirectoryEntry dir : mapWz.getRoot().getSubdirectories()){
@@ -179,7 +183,9 @@ public class MobInfoCommand extends Command {
             }
         }
     }
-    }
+    Duration initDuration = Duration.between(beforeInit, Instant.now());
+        System.out.println("Cached mob data after " +  initDuration.toMillis() + "ms.");
+}
 
     public Map<String, String> getMobStats(String mobId, List<String> attributes) {
         Data mobData = MobInfoCommand.mobData.getData(mobId+".img");
@@ -189,8 +195,15 @@ public class MobInfoCommand extends Command {
         mobStats.put("img", "Mob/"+mobImgId+".img/stand/0");
         for (String attr : attributes){
             try {
+                Data attrData = mobData.getChildByPath("info/" + attr);
+                if (attrData == null) {
+                    // some nodes don't exist on all mobs
+                    // such as elemAttr
+                    System.out.println("Attribute " + attr + " does not exist on mob " + mobId);
+                    continue;
+                }
                 if (attr.toLowerCase().equals("elemattr")) {
-                    String value = DataTool.getString(mobData.getChildByPath("info/" + attr));
+                    String value = DataTool.getString(attrData);
 
                     Map<String, String> parsedElements = parseElementalAttributes(value);
                     for (String effectivenessLevel : parsedElements.keySet()){
@@ -198,11 +211,12 @@ public class MobInfoCommand extends Command {
                     }
                     continue;
                 }
-                int value = DataTool.getInt(mobData.getChildByPath("info/" + attr));
+                int value = DataTool.getIntConvert(attrData);
 
                 mobStats.put(attr.replaceAll("max", "").toUpperCase(), ""+value);
             } catch (Exception e) {
                 e.printStackTrace();
+                System.out.println("Attribute " + attr + "on mob " + mobId);
             }
         }
         return mobStats;
