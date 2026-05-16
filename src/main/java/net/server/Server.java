@@ -26,6 +26,7 @@ import client.Client;
 import client.Family;
 import client.SkillFactory;
 import client.command.CommandsExecutor;
+import client.command.commands.gm0.MobInfoCommand;
 import client.inventory.Item;
 import client.inventory.ItemFactory;
 import client.inventory.manipulator.CashIdGenerator;
@@ -943,6 +944,9 @@ public class Server {
 
         OpcodeConstants.generateOpcodeNames();
         CommandsExecutor.getInstance();
+        // Start mob cache in background to avoid blocking startup.
+        // First command to use @mobinfo will wait up to 5 seconds for cache completion.
+        MobInfoCommand.startCacheAsync();
 
         for (Channel ch : this.getAllChannels()) {
             ch.reloadEventScriptManager();
