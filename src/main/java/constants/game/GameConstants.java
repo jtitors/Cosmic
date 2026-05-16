@@ -38,7 +38,6 @@ public class GameConstants {
     public static final Disease[] CPQ_DISEASES = {Disease.SLOW, Disease.SEDUCE, Disease.STUN, Disease.POISON,
             Disease.SEAL, Disease.DARKNESS, Disease.WEAKEN, Disease.CURSE};
 
-    public static final Map<String, String> elementalAttributes;
 
     public static final int MAX_FIELD_MOB_DAMAGE = getMaxObstacleMobDamageFromWz() * 2;
 
